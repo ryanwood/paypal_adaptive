@@ -27,6 +27,9 @@ module PaypalAdaptive
       #JSON::Schema.validate(@data, @@schema)
     end
 
+
+    # Adaptive Payments
+
     def pay(data)
       raise NoDataError unless data
 
@@ -78,6 +81,16 @@ module PaypalAdaptive
       call_api(data, "/AdaptivePayments/Refund")
     end
 
+
+    # Adaptive Accounts
+
+    def get_verified_status(data)
+      raise NoDataError unless data
+
+      response_data = call_api(data, "/AdaptiveAccounts/GetVerifiedStatus")
+      PaypalAdaptive::Response.new(response_data, @env)
+    end
+
     def call_api(data, path)
       #hack fix: JSON.unparse doesn't work in Rails 2.3.5; only {}.to_json does..
       api_request_data = JSON.unparse(data) rescue data.to_json
@@ -87,6 +100,11 @@ module PaypalAdaptive
       http.verify_mode = OpenSSL::SSL::VERIFY_PEER
       http.ca_path = @@ssl_cert_path unless @@ssl_cert_path.nil?
       http.ca_file = @@ssl_cert_file unless @@ssl_cert_file.nil?
+
+      puts url.host
+      puts path
+      puts api_request_data
+      puts @@headers
 
       resp, response_data = http.post(path, api_request_data, @@headers)
 
